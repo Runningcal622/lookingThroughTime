@@ -12,7 +12,7 @@ var day = 0;
 var margins ={
   top:10,
   bottom:50,
-  left:10,
+  left:50,
   right:10
 }
 
@@ -38,7 +38,7 @@ var initializeScreen = function(data)
 
 
   var barWidth = width/data[day].grades.length;
-
+ var colors = d3.scaleOrdinal(d3.schemeDark2);
 
   var barArea = svg.append("g")
     .selectAll("rect")
@@ -46,23 +46,24 @@ var initializeScreen = function(data)
     .enter()
     .append("rect")
     .attr("x",function(d,i){
-      return i*barWidth;
+      return i*barWidth + margins.left;
     })
     .attr("y",function(d){
-    return height - d.grade;})
+    return height + margins.top - yScale(100 - d.grade);})
     .attr("width",barWidth-10)
     .attr("height",function(d){
-      return d.grade;});
+      return  yScale(100 - d.grade);})
+      .attr("fill",function(d){return colors(d.name)});
 
       console.log("before buttons "+day);
 
   var prevButton = body.append("button").classed("prevButton",true)
   .text("Prev")
-  .on("click",function(){updateScreen(day-1,data);});
+  .on("click",function(){updateScreen(day-1,data, yScale);});
   console.log("after 1 button "+day);
   var nextButton = body.append("button").classed("nextButton",true)
   .text("Next")
-  .on("click",function(){updateScreen(day+1,data);});
+  .on("click",function(){updateScreen(day+1,data, yScale);});
   var dayP = body.append("text").text("   "+(day+1)+"  ").classed("dayOn",true);
   console.log("before 2 button "+day);
 
@@ -73,16 +74,34 @@ var initializeScreen = function(data)
   var xAxis = d3.axisBottom(xScale);
   var yAxis = d3.axisLeft(yScale);
 
-  svg.append("g").classed("xAxis",true)
-            .call(xAxis)
-            .attr("transform","translate("+(margins.left)+","+(height+margins.top)+")");
+
 
   svg.append("g").classed("yAxis",true)
-            .call(yAxis);
+            .call(yAxis)
+            .attr("transform","translate("+(margins.left)+","+(margins.top)+")");
+
+  var legend = svg.append("g")
+                  .classed("legend",true)
+                  .attr("transform","translate("+(margins.left)+"," +(margins.top+ height +10)+")");
+
+  var legendLines = legend.selectAll("g")
+                          .data(data[day].grades)
+                          .enter()
+                          .append("g")
+                          .classed("legendLine",true)
+                          .attr("transform",function(d,i)
+                          {return "translate("+(15+i*80)+",0)";})
+
+        legendLines.append('text')
+              .attr("x",function(d,i){
+                 console.log(d); return (i*10);
+               })
+               .attr("y",10)
+                .text(function(d) {return d.name})
 }
 
 
-var updateScreen = function(newDay,data)
+var updateScreen = function(newDay,data, yScale)
 {
   var width = 400;
   var height = 400;
@@ -106,13 +125,13 @@ var updateScreen = function(newDay,data)
     .data(dataAtDay.grades)
     .transition()
     .attr("x",function(d,i){
-      return i*barWidth;
+      return i*barWidth + margins.left;
     })
     .attr("y",function(d){
-    return height - d.grade;})
+    return height + margins.top - yScale(100 - d.grade);})
     .attr("width",barWidth-10)
     .attr("height",function(d){
-      return d.grade;});
+      return  yScale(100 - d.grade);});
 
     var dayP = d3.select(".dayOn").text("    "+(day+1)+"    ");
 
