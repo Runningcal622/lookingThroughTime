@@ -7,7 +7,6 @@ function(err){
   console.log(err);
 })
 
-var day = 0;
 
 var margins ={
   top:10,
@@ -35,14 +34,18 @@ var initializeScreen = function(data)
   var yScale = d3.scaleLinear()
                  .domain([0,100])
                  .range([height,0]);
+   var day = 1;
+   var dayP = body.append("text").text(day).classed("dayOn",true);
+   console.log(dayP.innerText);
 
 
-  var barWidth = width/data[day].grades.length;
+
+  var barWidth = width/data[day-1].grades.length;
  var colors = d3.scaleOrdinal(d3.schemeDark2);
 
   var barArea = svg.append("g")
     .selectAll("rect")
-    .data(data[day].grades)
+    .data(data[day-1].grades)
     .enter()
     .append("rect")
     .attr("x",function(d,i){
@@ -57,14 +60,14 @@ var initializeScreen = function(data)
 
       console.log("before buttons "+day);
 
+
   var prevButton = body.append("button").classed("prevButton",true)
   .text("Prev")
-  .on("click",function(){updateScreen(day-1,data, yScale);});
+  .on("click",function(){updateScreen(day-2,data, yScale);});
   console.log("after 1 button "+day);
   var nextButton = body.append("button").classed("nextButton",true)
   .text("Next")
-  .on("click",function(){updateScreen(day+1,data, yScale);});
-  var dayP = body.append("text").text("   "+(day+1)+"  ").classed("dayOn",true);
+  .on("click",function(){updateScreen(day,data, yScale);});
   console.log("before 2 button "+day);
 
 
@@ -107,7 +110,7 @@ var updateScreen = function(newDay,data, yScale)
   var height = 400;
   width = width - margins.left -margins.right;
   height = height-margins.top-margins.bottom;
-  var barWidth = width/data[day].grades.length;
+  var barWidth = width/data[0].grades.length;
 
 
   if (newDay===-1)
@@ -124,6 +127,8 @@ var updateScreen = function(newDay,data, yScale)
     .selectAll("rect")
     .data(dataAtDay.grades)
     .transition()
+    .duration(1000)
+    .ease(d3.easeCubic)
     .attr("x",function(d,i){
       return i*barWidth + margins.left;
     })
@@ -132,6 +137,12 @@ var updateScreen = function(newDay,data, yScale)
     .attr("width",barWidth-10)
     .attr("height",function(d){
       return  yScale(100 - d.grade);});
+
+      var prevButton = d3.select("body").select(".prevButton")
+      .on("click",function(){updateScreen(day-1,data, yScale);});
+      console.log("after 1 button "+day);
+      var nextButton = d3.select("body").select(".nextButton")
+      .on("click",function(){updateScreen(day+1,data, yScale);});
 
     var dayP = d3.select(".dayOn").text("    "+(day+1)+"    ");
 
